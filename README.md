@@ -7,10 +7,10 @@
 ### Social Links Hub — Ayush Gupta
 
 <p align="center">
-  <a href="https://ayusheduverse.github.io/Ayush-Links/">
+  <a href="https://aayushguptadev11.github.io/Ayush-Links/">
     <img src="https://img.shields.io/badge/Live_Demo-🌐-E11D48?style=for-the-badge&labelColor=1a1a1a" alt="Live Demo">
   </a>
-  <a href="https://github.com/AyushEduverse/Ayush-Links">
+  <a href="https://github.com/aayushguptadev11/Ayush-Links">
     <img src="https://img.shields.io/badge/GitHub-Repository-black?style=for-the-badge&logo=github" alt="GitHub Repo">
   </a>
 </p>
@@ -129,7 +129,7 @@ No build step, no dependencies, no backend. Just open in a browser!
 
 ```bash
 # Clone the repository
-git clone https://github.com/AyushEduverse/Ayush-Links.git
+git clone https://github.com/aayushguptadev11/Ayush-Links.git
 
 # Navigate into the project
 cd Ayush-link
