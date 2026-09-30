@@ -1,11 +1,27 @@
 /* ============================================
-   WHATSAPP PREFILL
+   WHATSAPP CONTROLLER — Pre-filled message
+   ============================================
+   Rewrites the WhatsApp link's href with a pre-written intro pulled from
+   App.config, so the number and message live in exactly one place.
+
+   Exposed as: window.AyushLink.whatsapp
    ============================================ */
-const WhatsAppController = {
-  init: function () {
-    const waBtn = document.getElementById('whatsappBtn');
+(function (App) {
+  'use strict';
+
+  /**
+   * Point the WhatsApp button at wa.me with the configured message.
+   *
+   * @returns {void}
+   */
+  function init() {
+    var waBtn = App.utils.$('#whatsappBtn');
     if (!waBtn) return;
-    const waMessage = 'Hey Ayush \uD83D\uDC4B\n\nJust visited your portfolio. Let\'s connect \uD83D\uDE80';
-    waBtn.href = 'https://wa.me/917398244265?text=' + encodeURIComponent(waMessage);
+
+    waBtn.href = 'https://wa.me/' + App.config.whatsapp.number +
+      '?text=' + encodeURIComponent(App.config.whatsapp.message);
   }
-};
+
+  App.whatsapp = { init: init };
+
+})(window.AyushLink = window.AyushLink || {});

@@ -1,20 +1,34 @@
 /* ============================================
-   GSAP ENTRANCE ANIMATION — Cinematic Timeline
+   ENTRANCE CONTROLLER — Cinematic timeline
+   ============================================
+   Animates the hero into view on load. The elements start at opacity 0 via
+   animations.css; this timeline restores them. When motion is reduced, or GSAP
+   is unavailable, they are simply shown immediately.
+
+   Exposed as: window.AyushLink.entrance
    ============================================ */
-const AnimationController = {
-  runEntrance: function () {
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReduced || typeof gsap === 'undefined') {
-      document.querySelectorAll('.social-icon-btn, .hire-cta, #avatar, #name, #tagline, #typed-section, #divider, #social-title, #footer').forEach(function (el) {
-        if (el) el.style.opacity = '1';
+(function (App) {
+  'use strict';
+
+  /** Selector list for every element the entrance timeline touches. */
+  var ENTRANCE_SELECTOR = '#avatar, #name, #tagline, #typed-section, #divider, #social-title, .social-icon-btn, .hire-cta, #footer';
+
+  /**
+   * Run the staggered entrance timeline.
+   *
+   * @returns {void}
+   */
+  function runEntrance() {
+    // Reduced motion or no GSAP → reveal everything immediately.
+    if (App.utils.prefersReducedMotion() || typeof gsap === 'undefined') {
+      App.utils.$$(ENTRANCE_SELECTOR).forEach(function (el) {
+        el.style.opacity = '1';
       });
       return;
     }
 
-    // Set initial states for ALL animated properties
-    gsap.set('#avatar, #name, #tagline, #typed-section, #divider, #social-title, .social-icon-btn, .hire-cta, #footer', {
-      opacity: 0
-    });
+    // Initial states for every animated property.
+    gsap.set(ENTRANCE_SELECTOR, { opacity: 0 });
     gsap.set('#name, #tagline, #typed-section, #social-title, .social-icon-btn, .hire-cta, #footer', {
       y: 30
     });
@@ -42,7 +56,7 @@ const AnimationController = {
       scaleX: 0, transformOrigin: 'left center'
     });
 
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    var tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
     // ——— HERO SECTION (0s → 1.2s) ———
     tl.to('#avatar', {
@@ -76,7 +90,7 @@ const AnimationController = {
       ease: 'back.out(1.2)'
     }, 0.95);
 
-    // ——— DIVIDER (1.1s → 1.6s) ———
+    // ——— DIVIDER + TITLE (1.1s → 1.6s) ———
     tl.to('#divider', {
       opacity: 1, scaleX: 1,
       duration: 0.55,
@@ -116,4 +130,7 @@ const AnimationController = {
       delay: 0.5
     });
   }
-};
+
+  App.entrance = { runEntrance: runEntrance };
+
+})(window.AyushLink = window.AyushLink || {});

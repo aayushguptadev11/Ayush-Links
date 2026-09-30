@@ -1,31 +1,48 @@
 /* ============================================
-   MASTER INIT
+   BOOT — Composition root
+   ============================================
+   This file contains no feature logic. It only starts the controllers in the
+   order they depend on.
+
+   Load order (index.html) must stay:
+     config.js → utils.js → controllers… → init.js
+
+   Exposed as: the side effect of calling window.AyushLink.* init methods.
    ============================================ */
-(function () {
+(function (App) {
   'use strict';
 
-  ThemeController.init();
-  EmailController.init();
-  WhatsAppController.init();
-  AnimationController.runEntrance();
-  TypedController.init();
-  SocialInteraction.init();
-  TouchController.init();
-  StarsController.init();
+  /**
+   * Start every controller.
+   *
+   * @returns {void}
+   */
+  function boot() {
+    App.theme.init();
+    App.email.init();
+    App.whatsapp.init();
+    App.entrance.runEntrance();
+    App.typed.init();
+    App.interactions.init();
+    App.touch.init();
+    App.stars.init();
 
-  // Cleanup touch resources on page unload
-  window.addEventListener('beforeunload', function () {
-    TouchController.destroy();
-  });
-
-  // Register Service Worker for PWA offline support
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('/sw.js', { scope: '/' }).then(function (registration) {
-        console.log('[PWA] ServiceWorker registered:', registration.scope);
-      }).catch(function (err) {
-        console.warn('[PWA] ServiceWorker registration failed:', err);
-      });
+    // Release touch canvas resources on unload.
+    window.addEventListener('beforeunload', function () {
+      App.touch.destroy();
     });
   }
-})();
+
+  /*
+   * Scripts sit at the end of <body>, so the DOM is already parsed and boot
+   * runs immediately — the same timing as before this refactor. The
+   * DOMContentLoaded fallback only matters if the scripts are later moved into
+   * <head>, in which case #main-content would not exist yet.
+   */
+  if (document.readyState === 'loading' && !document.getElementById('main-content')) {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+
+})(window.AyushLink = window.AyushLink || {});

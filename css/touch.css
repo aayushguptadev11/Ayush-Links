@@ -21,16 +21,18 @@
   user-select: none;
 }
 
-/* Brand-specific touch flash — immediate icon color shift */
-.social-icon-btn[data-brand="github"]:active i { color: #24292e; }
-.social-icon-btn[data-brand="linkedin"]:active i { color: #0077B5; }
-.social-icon-btn[data-brand="portfolio"]:active i { color: #DC2626; }
-.social-icon-btn[data-brand="instagram"]:active i { color: #E4405F; }
-.social-icon-btn[data-brand="twitter"]:active i { color: #000000; }
-.social-icon-btn[data-brand="threads"]:active i { color: #000000; }
-.social-icon-btn[data-brand="snapchat"]:active i { color: #FFFC00; }
-.social-icon-btn[data-brand="resume"]:active i { color: #DC2626; }
-.social-icon-btn[data-brand="whatsapp"]:active i { color: #25D366; }
+/* Brand-specific touch flash — immediate icon colour shift.
+   Shares tokens with the hover fills in components.css so the two files
+   cannot drift apart. */
+.social-icon-btn[data-brand="github"]:active i { color: var(--brand-fill-github); }
+.social-icon-btn[data-brand="linkedin"]:active i { color: var(--brand-linkedin); }
+.social-icon-btn[data-brand="portfolio"]:active i { color: var(--brand-red); }
+.social-icon-btn[data-brand="instagram"]:active i { color: var(--brand-instagram); }
+.social-icon-btn[data-brand="twitter"]:active i { color: var(--brand-fill-black); }
+.social-icon-btn[data-brand="threads"]:active i { color: var(--brand-fill-black); }
+.social-icon-btn[data-brand="snapchat"]:active i { color: var(--brand-snapchat-fill); }
+.social-icon-btn[data-brand="resume"]:active i { color: var(--brand-red); }
+.social-icon-btn[data-brand="whatsapp"]:active i { color: var(--brand-whatsapp); }
 /* Note: scale/transform handled by GSAP in touch.js */
 
 /* ============================================

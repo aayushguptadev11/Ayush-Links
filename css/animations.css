@@ -1,22 +1,63 @@
 /* ============================================
-   CONTINUOUS ANIMATIONS & EFFECTS
-   Subtle ongoing animations for every element
+   ANIMATIONS — Motion layer
+   ============================================
+   This file owns EVERY @keyframes in the project and every rule that applies
+   one. Component files hold only static visuals; if you add motion, it belongs
+   here. It also owns the reduced-motion overrides for the animations below.
+
+   Previously this file also re-declared component styles (icon transitions,
+   hover transforms, tooltip borders, CTA transitions). Those duplicates caused
+   load-order-dependent behaviour and have been folded back into their owning
+   component files.
    ============================================ */
 
-/* Prevent FOUC — GSAP sets opacity:0 via JS, but CSS ensures
-   elements start hidden before JS runs */
-#avatar, #name, #tagline, #typed-section, #divider, #social-title,
-.social-icon-btn, .hire-cta, #footer {
+/* ============================================
+   1. ENTRANCE GUARD
+   GSAP sets these to opacity 0 via JS; CSS makes them start hidden so there is
+   no flash of content before the timeline runs. gsap-entrance.js restores them
+   (and restores them immediately when motion is reduced).
+   ============================================ */
+#avatar,
+#name,
+#tagline,
+#typed-section,
+#divider,
+#social-title,
+.social-icon-btn,
+.hire-cta,
+#footer {
   opacity: 0;
 }
 
 /* ============================================
-   2. TAGLINE — Underline Reveal on Hover
+   2. PROFILE IMAGE — rotating ring + breathing glow
+   Static paints live in hero.css.
    ============================================ */
-.tagline {
-  position: relative;
+.profile-image-wrapper::before {
+  animation: spin-ring 3.5s linear infinite;
 }
 
+.profile-image-wrapper::after {
+  animation: breathe-glow 3s ease-in-out infinite;
+}
+
+.profile-image-wrapper:hover::before {
+  animation-duration: 1.5s;
+}
+
+@keyframes spin-ring {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes breathe-glow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50%      { opacity: 0.8; transform: scale(1.12); }
+}
+
+/* ============================================
+   3. TAGLINE — underline reveal on hover
+   ============================================ */
 .tagline::after {
   content: '';
   position: absolute;
@@ -34,33 +75,12 @@
   transform: scaleX(1);
 }
 
-.tagline .highlight {
-  display: inline-block;
-  background: linear-gradient(
-    90deg,
-    var(--accent) 0%,
-    #f43f5e 25%,
-    var(--accent) 50%,
-    #fb7185 75%,
-    var(--accent) 100%
-  );
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-}
-
 /* ============================================
-   3. SOCIAL SECTION TITLE
-   Already has shimmer-text in components.css
-   Adding hover scale enhancement
+   4. SOCIAL SECTION TITLE — shimmer + hover
    ============================================ */
 .social-section-title {
+  animation: shimmer-text 3s ease-in-out infinite;
   transition: transform 300ms ease, letter-spacing 300ms ease;
-  display: inline-block;
-  width: 100%;
-  text-align: center;
 }
 
 .social-section-title:hover {
@@ -68,45 +88,16 @@
   letter-spacing: 0.16em;
 }
 
-/* ============================================
-   4. SOCIAL ICONS — Enhanced Hover
-   ============================================ */
-.social-icon-btn {
-  transition: transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1),
-              background-color 250ms ease,
-              border-color 250ms ease,
-              box-shadow 250ms ease;
-}
-
-.social-icon-btn:hover {
-  transform: translateY(-5px) scale(1.08);
-}
-
-.social-icon-btn:active {
-  transform: translateY(-2px) scale(0.96);
-}
-
-/* Tooltip enhancement — uses CSS variables for dark mode support */
-.social-icon-btn .tooltip {
-  background: var(--bg-card);
-  color: var(--text-primary);
-  box-shadow: 0 6px 20px var(--shadow);
-  border: 1px solid var(--accent);
-  font-weight: 600;
-  letter-spacing: 0.01em;
+@keyframes shimmer-text {
+  0%   { background-position: 0% center; }
+  50%  { background-position: 100% center; }
+  100% { background-position: 0% center; }
 }
 
 /* ============================================
-   8. HIRE CTA — Pulse + Rocket + Progress Bar
+   5. HIRE CTA — glow overlay, rocket, progress, loading
+   Base colours and transitions live in components.css.
    ============================================ */
-.hire-cta {
-  position: relative;
-  overflow: hidden;
-  transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 300ms ease,
-              background-color 300ms ease;
-}
-
 .hire-cta::before {
   content: '';
   position: absolute;
@@ -114,7 +105,7 @@
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
   opacity: 0;
   transition: opacity 400ms ease;
   pointer-events: none;
@@ -139,10 +130,7 @@
   75%      { transform: translateX(-1px) rotate(3deg); }
 }
 
-/* ============================================
-   HIRE CTA — Progress Bar (injected via JS)
-   Left-to-right loading indicator on click
-   ============================================ */
+/* Progress bar (element injected by email.js) */
 .hire-cta-progress {
   position: absolute;
   bottom: 0;
@@ -164,7 +152,6 @@
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
 }
 
-/* Loading state — button pulse */
 .hire-cta.is-loading {
   animation: cta-loading-pulse 1.2s ease-in-out;
   cursor: default;
@@ -176,18 +163,8 @@
   100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); }
 }
 
-/* Prevent continuous animations on reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .ambient-glow { animation: none; }
-  .footer .star { animation: none; }
-  .tagline::after { display: none; }
-  .hire-cta-progress { display: none; }
-  .hire-cta.is-loading { animation: none; }
-  .theme-wave { display: none !important; }
-}
-
 /* ============================================
-   THEME TOGGLE — Entrance animation
+   6. THEME TOGGLE — entrance
    ============================================ */
 .theme-toggle {
   opacity: 0;
@@ -199,15 +176,8 @@
   100% { opacity: 1; transform: scale(1) rotate(0deg); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .theme-toggle {
-    opacity: 1;
-    animation: none;
-  }
-}
-
 /* ============================================
-   9. FOOTER — Star Twinkle
+   7. FOOTER — star twinkle + brand hover
    ============================================ */
 .footer .star {
   display: inline-block;
@@ -229,7 +199,8 @@
 }
 
 /* ============================================
-   10. AMBIENT GLOW — Pulse
+   8. AMBIENT GLOW — pulse
+   Position and gradient live in base.css.
    ============================================ */
 .ambient-glow {
   animation: ambient-pulse 5s ease-in-out infinite;
@@ -244,4 +215,31 @@
     transform: translateX(-50%) scale(1.15);
     opacity: 0.8;
   }
+}
+
+/* ============================================
+   9. REDUCED MOTION — disable every animation above
+   (responsive.css also applies a global transition/animation reset.)
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .profile-image-wrapper::before,
+  .profile-image-wrapper::after {
+    animation: none;
+  }
+  /*
+   * `.ambient-glow` and `.footer .star` are intentionally NOT disabled here.
+   * In the original stylesheet their animation declarations came after this
+   * block, so these overrides never applied; the global reset in
+   * responsive.css (animation-duration: 0.01ms !important) already neutralises
+   * them. Repeating the override here would change the computed animation-name
+   * under reduced motion, so it is left out on purpose.
+   */
+  .tagline::after { display: none; }
+  .hire-cta-progress { display: none; }
+  .hire-cta.is-loading { animation: none; }
+  .theme-toggle {
+    opacity: 1;
+    animation: none;
+  }
+  .theme-wave { display: none !important; }
 }

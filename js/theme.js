@@ -1,131 +1,135 @@
 /* ============================================
    THEME CONTROLLER — Dark/Light Toggle
-   Manual override with system preference fallback
-   ============================================ */
-const ThemeController = {
-  /** Current theme: 'light' or 'dark' */
-  currentTheme: 'light',
+   ============================================
+   Manual override with system-preference fallback. The chosen theme is stored
+   under localStorage key `theme-preference`; when nothing is stored, the OS
+   preference is used and continues to be followed live.
 
-  init: function () {
-    // Restore saved preference, else use system
-    let saved = null;
-    try { saved = localStorage.getItem('theme-preference'); } catch (_) {}
+   Exposed as: window.AyushLink.theme
+   ============================================ */
+(function (App) {
+  'use strict';
+
+  /** localStorage key holding the manual override. */
+  var STORAGE_KEY = 'theme-preference';
+
+  /** Current theme: "light" or "dark". Module state. */
+  var currentTheme = 'light';
+
+  /**
+   * Restore the saved preference (else follow the system), apply it, and wire
+   * the toggle button plus the live system-preference listener.
+   *
+   * @returns {void}
+   */
+  function init() {
+    // Restore saved preference, else use the system setting.
+    var saved = null;
+    try { saved = localStorage.getItem(STORAGE_KEY); } catch (_) { /* private mode */ }
+
     if (saved === 'dark' || saved === 'light') {
-      this.currentTheme = saved;
+      currentTheme = saved;
     } else {
-      this.currentTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      currentTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
 
-    // Apply theme immediately (before any render)
-    this.applyTheme(false);
+    // Apply immediately, before any render.
+    applyTheme(false);
 
-    // Setup toggle button
-    this.setupToggle();
+    setupToggle();
 
-    // Listen for system preference changes (only if no manual save)
-    var self = this;
+    // Follow system changes only while there is no manual override.
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
-      var saved = null;
-      try { saved = localStorage.getItem('theme-preference'); } catch (_) {}
-      if (!saved) {
-        self.currentTheme = e.matches ? 'dark' : 'light';
-        self.applyTheme(true);
+      var stored = null;
+      try { stored = localStorage.getItem(STORAGE_KEY); } catch (_) { /* private mode */ }
+      if (!stored) {
+        currentTheme = e.matches ? 'dark' : 'light';
+        applyTheme(true);
       }
     });
-  },
-
-  /** Apply theme to <html> and update icon */
-  applyTheme: function (animated) {
-    const html = document.documentElement;
-    html.setAttribute('data-theme', this.currentTheme);
-
-    // Update toggle icon
-    this.updateToggleIcon(animated);
-  },
+  }
 
   /**
-   * Toggle between light and dark with elastic burst reveal
-   * An expanding circle bursts from the toggle button with
-   * spring physics, revealing the new theme underneath.
+   * Write the theme to <html> and refresh the toggle icon.
    *
-   * Design rationale (UI/UX Pro Max guidelines):
-   * - Duration: 400ms (complex transition, under 500ms max)
-   * - Easing: Back.easeOut(2) — subtle overshoot for premium feel
-   * - Button press: Elastic.easeOut — tactile feedback
-   * - Interruptible: rapid-click guard + killTweensOf
-   * - Reduced-motion: instant switch fallback
+   * @param {boolean} animated Whether to animate the icon swap.
+   * @returns {void}
    */
-  toggle: function () {
-    this.currentTheme = this.currentTheme === 'dark' ? 'light' : 'dark';
-    try {
-      localStorage.setItem('theme-preference', this.currentTheme);
-    } catch (_) {}
-
-    // Animate the theme transition
-    this.animateElasticReveal();
-  },
+  function applyTheme(animated) {
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    updateToggleIcon(animated);
+  }
 
   /**
-   * Elastic burst reveal animation
-   * 1. Button press feedback — elastic scale rebound
-   * 2. Switch page to NEW theme first
-   * 3. OLD bg overlay starts as tiny circle at button → invisible
-   * 4. Circle bursts OUTWARD from button with spring physics → covers screen
-   * 5. Overlay fades during expansion → old bg ripple dissipates
-   * 6. Icon swaps mid-burst with exit-faster-than-enter timing
+   * Flip the theme, persist it, and play the burst reveal.
    *
-   * Visual: a circular ripple of the old theme bursts from the button
-   * and fades away, leaving the new theme visible underneath.
+   * @returns {void}
    */
-  animateElasticReveal: function () {
-    const btn = document.querySelector('.theme-toggle');
+  function toggle() {
+    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem(STORAGE_KEY, currentTheme); } catch (_) { /* private mode */ }
+
+    animateElasticReveal();
+  }
+
+  /**
+   * Elastic burst reveal.
+   *
+   * Design rationale:
+   * - Duration 600ms, Back.easeOut(2) for a subtle overshoot.
+   * - Button press uses Elastic.easeOut for tactile feedback.
+   * - Interruptible: a rapid-click guard removes any in-flight overlay.
+   * - Reduced motion falls back to an instant switch.
+   *
+   * A circular ripple of the OLD background bursts outward from the button and
+   * fades, leaving the NEW theme visible underneath.
+   *
+   * @returns {void}
+   */
+  function animateElasticReveal() {
+    var btn = App.utils.$('.theme-toggle');
     if (!btn) return;
 
-    // Remove any existing overlay (rapid-click guard)
-    var existing = document.querySelector('.theme-wave');
+    // Rapid-click guard: drop any existing overlay.
+    var existing = App.utils.$('.theme-wave');
     if (existing) {
       if (typeof gsap !== 'undefined') gsap.killTweensOf(existing);
       existing.parentNode.removeChild(existing);
     }
 
-    // Kill any running button animations
     if (typeof gsap !== 'undefined') gsap.killTweensOf(btn);
 
-    // Get toggle button position (center)
-    const rect = btn.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
+    // Geometry: centre of the toggle button.
+    var rect = btn.getBoundingClientRect();
+    var cx = rect.left + rect.width / 2;
+    var cy = rect.top + rect.height / 2;
 
-    // Read OLD theme's bg color from computed styles
-    // (DOM still has old data-theme since applyTheme hasn't been called yet)
-    const oldBg = getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim() || '#fdf5f5';
+    // Read the OLD theme's background (applyTheme has not run yet).
+    var oldBg = getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim() || '#fdf5f5';
 
-    // Skip animation if GSAP not available or reduced motion
-    if (typeof gsap === 'undefined' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      this.applyTheme(true);
+    // No GSAP or reduced motion → switch instantly.
+    if (typeof gsap === 'undefined' || App.utils.prefersReducedMotion()) {
+      applyTheme(true);
       return;
     }
 
-    // Step 1: Button press feedback — elastic scale rebound
-    gsap.fromTo(btn, {
-      scale: 0.92
-    }, {
+    // 1. Button press feedback.
+    gsap.fromTo(btn, { scale: 0.92 }, {
       scale: 1,
       duration: 0.6,
       ease: 'Elastic.easeOut.config(1, 0.5)'
     });
 
-    // Step 2: Switch page to NEW theme first
-    this.applyTheme(true);
+    // 2. Switch the page to the NEW theme first.
+    applyTheme(true);
 
-    // Calculate max radius to cover screen from button
-    const dx = Math.max(cx, window.innerWidth - cx);
-    const dy = Math.max(cy, window.innerHeight - cy);
-    const maxRadius = Math.sqrt(dx * dx + dy * dy);
+    // Radius needed to cover the viewport from the button.
+    var dx = Math.max(cx, window.innerWidth - cx);
+    var dy = Math.max(cy, window.innerHeight - cy);
+    var maxRadius = Math.sqrt(dx * dx + dy * dy);
 
-    // Step 3: Create overlay with OLD theme's bg color
-    // Starts as tiny circle at button → invisible → new theme shows through
-    const overlay = document.createElement('div');
+    // 3. Overlay painted with the OLD background.
+    var overlay = document.createElement('div');
     overlay.className = 'theme-wave';
     overlay.style.position = 'fixed';
     overlay.style.top = '0';
@@ -143,8 +147,7 @@ const ThemeController = {
       opacity: 1
     });
 
-    // Step 4: Burst the circle OUTWARD from button with spring physics
-    // Old bg ripples out from button and fades away → new theme revealed
+    // 4. Burst outward and fade, revealing the new theme.
     gsap.to(overlay, {
       clipPath: 'circle(' + (maxRadius * 1.5) + 'px at ' + cx + 'px ' + cy + 'px)',
       opacity: 0,
@@ -156,28 +159,28 @@ const ThemeController = {
         }
       }
     });
-  },
+  }
 
   /**
-   * Update the toggle button icon
-   * Uses exit-faster-than-enter timing for responsive feel:
-   * - Exit: 120ms (faster)
-   * - Enter: 180ms (slower, with spring bounce)
-   * Total: 300ms — within micro-interaction guidelines (150-300ms)
+   * Swap the toggle icon. Uses exit-faster-than-enter timing:
+   * exit 200ms, enter 300ms with a spring bounce.
+   *
+   * @param {boolean} animated Whether to animate the swap.
+   * @returns {void}
    */
-  updateToggleIcon: function (animated) {
-    const btn = document.querySelector('.theme-toggle');
+  function updateToggleIcon(animated) {
+    var btn = App.utils.$('.theme-toggle');
     if (!btn) return;
 
-    const icon = btn.querySelector('i');
+    var icon = btn.querySelector('i');
     if (!icon) return;
 
-    const isDark = this.currentTheme === 'dark';
-    const newIconClass = isDark ? 'ri-sun-line' : 'ri-moon-line';
+    var isDark = currentTheme === 'dark';
+    var newIconClass = isDark ? 'ri-sun-line' : 'ri-moon-line';
 
-    if (icon.className.includes(newIconClass)) return;
+    if (icon.className.indexOf(newIconClass) !== -1) return;
 
-    if (animated && typeof gsap !== 'undefined' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (animated && typeof gsap !== 'undefined' && !App.utils.prefersReducedMotion()) {
       gsap.killTweensOf(icon);
 
       gsap.timeline({
@@ -185,7 +188,7 @@ const ThemeController = {
           gsap.set(icon, { clearProps: 'rotation,scale' });
         }
       })
-      // Exit: 200ms — fast exit
+      // Exit
       .to(icon, {
         rotation: -120,
         scale: 0,
@@ -196,7 +199,7 @@ const ThemeController = {
       .call(function () {
         icon.className = isDark ? 'ri-sun-line' : 'ri-moon-line';
       })
-      // Enter: 300ms — slower, spring bounce for premium feel
+      // Enter
       .to(icon, {
         rotation: 0,
         scale: 1,
@@ -206,16 +209,25 @@ const ThemeController = {
     } else {
       icon.className = isDark ? 'ri-sun-line' : 'ri-moon-line';
     }
-  },
+  }
 
-  /** Wire up the toggle button click */
-  setupToggle: function () {
-    const btn = document.querySelector('.theme-toggle');
+  /**
+   * Wire the toggle button's click handler.
+   *
+   * @returns {void}
+   */
+  function setupToggle() {
+    var btn = App.utils.$('.theme-toggle');
     if (!btn) return;
 
-    var self = this;
     btn.addEventListener('click', function () {
-      self.toggle();
+      toggle();
     });
   }
-};
+
+  App.theme = {
+    init: init,
+    toggle: toggle
+  };
+
+})(window.AyushLink = window.AyushLink || {});

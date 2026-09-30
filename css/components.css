@@ -1,7 +1,21 @@
 /* ============================================
+   COMPONENTS — Social links, tooltips, CTAs
+   ============================================
+   Owns every static style for the interactive components. Animation and
+   keyframes live in animations.css; responsive overrides live in
+   responsive.css; touch-only behaviour lives in touch.css.
+
+   Several rules in this file carry the value that previously won the cascade
+   from animations.css (icon transitions, hover/active transforms, tooltip
+   border). Those values are preserved verbatim so rendering is unchanged.
+   ============================================ */
+
+/* ============================================
    SOCIAL SECTION TITLE
    ============================================ */
 .social-section-title {
+  display: inline-block;
+  width: 100%;
   font-family: 'DM Sans', sans-serif;
   font-weight: 600;
   font-size: 0.75rem;
@@ -22,13 +36,6 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
-  animation: shimmer-text 3s ease-in-out infinite;
-}
-
-@keyframes shimmer-text {
-  0%   { background-position: 0% center; }
-  50%  { background-position: 100% center; }
-  100% { background-position: 0% center; }
 }
 
 /* ============================================
@@ -48,7 +55,9 @@
   flex-shrink: 0;
 }
 
-/* Icon button base */
+/* ============================================
+   ICON BUTTON — base and interaction states
+   ============================================ */
 .social-icon-btn {
   position: relative;
   width: 46px;
@@ -62,7 +71,8 @@
   justify-content: center;
   text-decoration: none;
   cursor: pointer;
-  transition: transform 200ms ease,
+  /* Winning value (was overridden by animations.css). */
+  transition: transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1),
               background-color 250ms ease,
               border-color 250ms ease,
               box-shadow 250ms ease;
@@ -80,7 +90,11 @@
 }
 
 .social-icon-btn:hover {
-  transform: translateY(-3px);
+  transform: translateY(-5px) scale(1.08);
+}
+
+.social-icon-btn:active {
+  transform: translateY(-2px) scale(0.96);
 }
 
 .social-icon-btn:focus-visible {
@@ -110,7 +124,12 @@
   pointer-events: none;
   transition: opacity 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
               transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
-  border: 1px solid var(--border);
+  /*
+   * Preserved quirk: the box border computes to --accent (it used to be
+   * overridden by animations.css) while the arrow below stays --border.
+   * Kept as-is so the rendering does not change; flagged for a future cleanup.
+   */
+  border: 1px solid var(--accent);
   box-shadow: 0 6px 20px var(--shadow);
   z-index: 10;
 }
@@ -137,7 +156,7 @@
   transform: translateX(-50%) translateY(0) scale(1);
 }
 
-/* Row 2 (6-10) — tooltip upar dikhao taki Row 1 se overlap na ho */
+/* Row 2 (items 6-10) — tooltip above to avoid overlapping Row 1 */
 .social-icon-btn:nth-child(n+6) .tooltip {
   top: auto;
   bottom: calc(100% + 10px);
@@ -161,68 +180,67 @@
 
 /* ============================================
    BRAND COLORS — Default (icon shows brand color)
+   Token names come from variables.css.
    ============================================ */
 .social-icon-btn[data-brand="github"] i { color: var(--brand-github); }
-.social-icon-btn[data-brand="linkedin"] i { color: #0077B5; }
-.social-icon-btn[data-brand="portfolio"] i { color: #DC2626; }
-.social-icon-btn[data-brand="instagram"] i { color: #E4405F; }
+.social-icon-btn[data-brand="linkedin"] i { color: var(--brand-linkedin); }
+.social-icon-btn[data-brand="portfolio"] i { color: var(--brand-red); }
+.social-icon-btn[data-brand="instagram"] i { color: var(--brand-instagram); }
 .social-icon-btn[data-brand="twitter"] i { color: var(--brand-twitter); }
 .social-icon-btn[data-brand="threads"] i { color: var(--brand-threads); }
-.social-icon-btn[data-brand="snapchat"] i { color: #E6B800; }
-.social-icon-btn[data-brand="resume"] i { color: #DC2626; }
-.social-icon-btn[data-brand="whatsapp"] i { color: #25D366; }
-/* .social-icon-btn[data-brand="email"] i removed — no email icon in DOM */
-.social-icon-btn[data-brand="facebook"] i { color: #1877F2; }
-
+.social-icon-btn[data-brand="snapchat"] i { color: var(--brand-snapchat); }
+.social-icon-btn[data-brand="resume"] i { color: var(--brand-red); }
+.social-icon-btn[data-brand="whatsapp"] i { color: var(--brand-whatsapp); }
+.social-icon-btn[data-brand="facebook"] i { color: var(--brand-facebook); }
 
 /* ============================================
    BRAND COLOR FILLS — Hover (bg fills, icon goes white)
    ============================================ */
 .social-icon-btn[data-brand="github"]:hover {
-  background: #24292e;
-  border-color: #24292e;
+  background: var(--brand-fill-github);
+  border-color: var(--brand-fill-github);
   box-shadow: 0 4px 12px rgba(36, 41, 46, 0.3);
 }
 .social-icon-btn[data-brand="github"]:hover i { color: #ffffff; }
 
 .social-icon-btn[data-brand="linkedin"]:hover {
-  background: #0077B5;
-  border-color: #0077B5;
+  background: var(--brand-linkedin);
+  border-color: var(--brand-linkedin);
   box-shadow: 0 4px 12px rgba(0, 119, 181, 0.3);
 }
 .social-icon-btn[data-brand="linkedin"]:hover i { color: #ffffff; }
 
 .social-icon-btn[data-brand="portfolio"]:hover {
-  background: #DC2626;
-  border-color: #DC2626;
+  background: var(--brand-red);
+  border-color: var(--brand-red);
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
 .social-icon-btn[data-brand="portfolio"]:hover i { color: #ffffff; }
 
 .social-icon-btn[data-brand="instagram"]:hover {
-  background: #E4405F;
-  border-color: #E4405F;
+  background: var(--brand-instagram);
+  border-color: var(--brand-instagram);
   box-shadow: 0 4px 12px rgba(228, 64, 95, 0.3);
 }
 .social-icon-btn[data-brand="instagram"]:hover i { color: #ffffff; }
 
 .social-icon-btn[data-brand="twitter"]:hover {
-  background: #000000;
-  border-color: #555555;
+  background: var(--brand-fill-black);
+  border-color: var(--brand-fill-gray);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 .social-icon-btn[data-brand="twitter"]:hover i { color: #ffffff; }
 
 .social-icon-btn[data-brand="threads"]:hover {
-  background: #000000;
-  border-color: #555555;
+  background: var(--brand-fill-black);
+  border-color: var(--brand-fill-gray);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 .social-icon-btn[data-brand="threads"]:hover i { color: #ffffff; }
 
 .social-icon-btn[data-brand="snapchat"]:hover {
-  background: #FFFC00;
-  border-color: #FFFC00;
+  background: var(--brand-snapchat-fill);
+  border-color: var(--brand-snapchat-fill);
   box-shadow: 0 4px 12px rgba(255, 252, 0, 0.3);
 }
 .social-icon-btn[data-brand="snapchat"]:hover i {
@@ -230,29 +248,25 @@
 }
 
 .social-icon-btn[data-brand="resume"]:hover {
-  background: #DC2626;
-  border-color: #DC2626;
+  background: var(--brand-red);
+  border-color: var(--brand-red);
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
 .social-icon-btn[data-brand="resume"]:hover i { color: #ffffff; }
 
 .social-icon-btn[data-brand="whatsapp"]:hover {
-  background: #25D366;
-  border-color: #25D366;
+  background: var(--brand-whatsapp);
+  border-color: var(--brand-whatsapp);
   box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
 }
 .social-icon-btn[data-brand="whatsapp"]:hover i { color: #ffffff; }
 
-/* .social-icon-btn[data-brand="email"]:hover removed — no email icon in DOM */
-
 .social-icon-btn[data-brand="facebook"]:hover {
-  background: #1877F2;
-  border-color: #1877F2;
+  background: var(--brand-facebook);
+  border-color: var(--brand-facebook);
   box-shadow: 0 4px 12px rgba(24, 119, 242, 0.3);
 }
-
 .social-icon-btn[data-brand="facebook"]:hover i { color: #ffffff; }
-
 
 /* ============================================
    HIRE ME CTA
@@ -275,9 +289,10 @@
   cursor: pointer;
   overflow: hidden;
   position: relative;
-  transition: transform 250ms ease,
-              box-shadow 250ms ease,
-              background-color 250ms ease;
+  /* Winning value (was overridden by animations.css). */
+  transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 300ms ease,
+              background-color 300ms ease;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -303,7 +318,7 @@
 
 /* ============================================
    THEME TOGGLE BUTTON
-   Fixed top-right, matches social icon style
+   Fixed top-right; entrance animation lives in animations.css.
    ============================================ */
 .theme-toggle {
   position: fixed;
@@ -355,6 +370,7 @@
 
 /* ============================================
    FOOTER
+   Star twinkle and brand hover live in animations.css.
    ============================================ */
 .footer {
   font-family: 'DM Sans', sans-serif;

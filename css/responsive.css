@@ -124,12 +124,6 @@
     font-size: 22px;
   }
 
-  /* Tooltip — desktop */
-  .social-icon-btn .tooltip {
-    font-size: 0.6875rem;
-    padding: 4px 10px 4px 8px;
-  }
-
   /* Footer */
   .footer {
     font-size: 0.8125rem;

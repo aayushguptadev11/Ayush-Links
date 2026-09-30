@@ -26,8 +26,7 @@
   <a href="#-features">Features</a> •
   <a href="#-tech-stack">Tech Stack</a> •
   <a href="#-project-structure">Structure</a> •
-  <a href="#-quick-start">Quick Start</a> •
-  <a href="#pwa-offline">PWA / Offline</a>
+  <a href="#-quick-start">Quick Start</a>
 </p>
 
 <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" width="100%">
@@ -50,8 +49,7 @@
 - **📄 Resume CTA** — One-click download/redirect to resume PDF
 - **📧 Hire Me CTA** — Pre-filled email template with progress bar animation
 - **💬 WhatsApp Pre-fill** — Instant message with pre-written intro text
-- **📲 Progressive Web App** — Installable on any device with offline support, standalone display, and app shortcuts
-- **⚡ Offline Caching** — Service worker pre-caches all core assets; browse social links even without internet
+- **📲 Home-Screen Ready** — Web app manifest + iOS web-app meta tags, so "Add to Home Screen" gives a standalone, app-like icon with shortcuts
 - **♿ Accessible** — Semantic HTML, ARIA labels, skip-to-content link, keyboard navigation, `prefers-reduced-motion` support
 - **⚡ Pure Vanilla Stack** — No frameworks, no build step — static HTML + CSS + JS
 
@@ -59,14 +57,13 @@
 
 | Technology | Purpose |
 |:---:|:---|
-| ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white) | Semantic structure with accessibility + PWA manifest & meta tags |
+| ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white) | Semantic structure with accessibility + web app manifest & iOS meta tags |
 | ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white) | Custom properties for theming, conic gradients, responsive breakpoints |
 | ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black) | Vanilla JS — modular controller pattern, service worker registration |
 | ![GSAP](https://img.shields.io/badge/GSAP-88CE02?style=flat-square&logo=greensock&logoColor=black) | Cinematic entrance timeline, elastic burst theme transition, touch interactions |
 | ![Typed.js](https://img.shields.io/badge/Typed.js-0D6EFD?style=flat-square&logo=javascript&logoColor=white) | Role typing animation with loop and smart backspace |
 | ![Remix Icons](https://img.shields.io/badge/Remix_Icons-111111?style=flat-square&logo=remix&logoColor=white) | 10+ social brand icons, theme toggle icons |
 | ![Google Fonts](https://img.shields.io/badge/Google_Fonts-4285F4?style=flat-square&logo=googlefonts&logoColor=white) | Poppins (headings), DM Sans (body), JetBrains Mono (code/typed) |
-| ![Service Worker](https://img.shields.io/badge/Service_Worker-000000?style=flat-square&logo=pwa&logoColor=white) | Offline caching with cache-first + stale-while-revalidate strategy |
 
 ## 🎨 Brand Identity
 
@@ -84,21 +81,21 @@
 
 ```
 Ayush-link/
-├── index.html                    ← Single-page entry point (includes PWA meta tags)
-├── sw.js                         ← Service worker — offline caching & PWA runtime
+├── index.html                    ← Single-page entry point (includes web app manifest + iOS meta tags)
+├── sw.js                         ← One-off service-worker kill switch (see "Home Screen")
 ├── assets/
-│   ├── icons/                    ← Favicons & PWA icons
+│   ├── icons/                    ← Favicons & home-screen icons
 │   │   ├── favicon.ico
 │   │   ├── favicon-16x16.png
 │   │   ├── favicon-32x32.png
 │   │   ├── android-chrome-192x192.png
 │   │   ├── android-chrome-512x512.png
-│   │   └── site.webmanifest      ← PWA manifest (name, icons, screenshots, shortcuts)
+│   │   └── site.webmanifest      ← Web app manifest (name, icons, screenshots, shortcuts)
 │   ├── image/
 │   │   └── Aayush.webp           ← Profile image
 │   ├── pdf/
 │   │   └── Ayush_Resume.pdf      ← Downloadable resume
-│   └── screenshots/              ← PWA install screenshots & README previews
+│   └── screenshots/              ← Manifest screenshots & README previews
 │       ├── desktop.png
 │       └── mobile.png
 ├── css/
@@ -110,7 +107,9 @@ Ayush-link/
 │   ├── responsive.css            ← Tablet (769px), Desktop (1024px), XS mobile (360px)
 │   └── touch.css                 ← Ripple, press effects, touch tooltip, trail canvas
 ├── js/
-│   ├── init.js                   ← Master init — boots all controllers + registers service worker
+│   ├── config.js                 ← Shared constants (email, WhatsApp, roles, mailto template)
+│   ├── utils.js                  ← Shared helpers (reduced-motion check, $ / $$)
+│   ├── init.js                   ← Composition root — boots all controllers
 │   ├── theme.js                  ← Dark/light toggle + elastic burst reveal animation
 │   ├── stars.js                  ← Floating particle canvas with twinkle
 │   ├── typed.js                  ← Typed.js controller (roles cycling)
@@ -119,7 +118,9 @@ Ayush-link/
 │   ├── email.js                  ← Pre-filled email template + progress bar
 │   ├── whatsapp.js               ← Pre-filled WhatsApp message
 │   └── touch.js                  ← Ripples, press scale, long-press tooltip, 3D tilt, trail stars
-├── ayush.md                      ← Full product/design/technical specification
+├── docs/
+│   ├── ARCHITECTURE.md           ← Code structure, CSS ownership, boot order, how-to guides
+│   └── superpowers/              ← Design spec + implementation plan for the code refactor
 └── README.md                     ← You are here
 ```
 
@@ -141,40 +142,17 @@ open index.html
 
 > 💡 **Tip:** All links are hardcoded in `index.html`. To edit your own links, modify the `<a>` tags in the `.social-icons-row` section.
 
-## 📲 PWA & Offline
+## 📲 Home Screen (no service worker)
 
-The site is a fully installable **Progressive Web App (PWA)**. Once loaded, all core assets are cached locally so the page works even offline.
+The site ships a web app manifest and iOS web-app meta tags, so visitors can use the browser's **Add to Home Screen** to pin a standalone, app-like icon with shortcuts.
 
-### 📥 Install on Your Device
+There is intentionally **no service worker and no offline caching**. That feature was removed because this is a link hub — every link needs the network anyway, so offline adds nothing — while cache-first HTML could serve returning visitors **stale links** after an update.
 
-| Platform | Steps |
-|:---|:---|
-| **Android (Chrome)** | Visit the page → tap the "Install" banner at the bottom → follow prompts |
-| **Desktop (Chrome/Edge)** | Click the install icon (➕) in the address bar → click "Install" |
-| **iOS (Safari)** | Tap the Share button → scroll down → tap "Add to Home Screen" → confirm |
+> **Note:** Chrome's install prompt requires a service worker, so it no longer appears. iOS "Add to Home Screen" still works, and the manifest shortcuts (GitHub, WhatsApp, Resume) remain available.
 
-### 🧠 Caching Strategy
+### 🧹 Service Worker Cleanup
 
-- **Install event** — Pre-caches all HTML, CSS, JS, favicons, and app icons using `Promise.allSettled` so a single asset failure never blocks installation
-- **Cache-first** — Serving cached assets instantly on repeat visits; background stale-while-revalidate keeps them fresh
-- **Network-first** — CDN resources (GSAP, Typed.js, Remix Icons, Google Fonts) load from network; browser handles them natively
-- **Offline fallback** — If offline, navigation requests serve the cached `index.html` so the page always renders
-
-### 📱 App Shortcuts
-
-Once installed, long-press / right-click the app icon to jump directly to:
-
-| Shortcut | Action |
-|:---|:---|
-| **GitHub** | Opens Ayush's GitHub profile |
-| **WhatsApp** | Opens WhatsApp with a pre-written intro message |
-| **Resume** | Opens the downloadable resume PDF |
-
-### 🖼️ Install Screenshots
-
-The manifest includes wide (desktop) and narrow (mobile) screenshots — supported browsers show these during the install prompt, giving users a preview before installing.
-
-> **Note:** Service worker registration happens after the page loads, so it never blocks rendering. Check the browser console for `[PWA] ServiceWorker registered: /` to confirm successful registration.
+`sw.js` is now a one-off **kill switch**. For visitors who installed the old version it deletes every cache, unregisters itself, and reloads the tab. It can be deleted once those clients have updated (roughly a few weeks after deploy).
 
 ## 📸 Screenshots
 
@@ -194,7 +172,7 @@ The manifest includes wide (desktop) and narrow (mobile) screenshots — support
 6. **Hire Me CTA** — Opens email client with a structured project inquiry template and animated progress bar
 7. **Dark/Light toggle** — Fixed top-right button with elastic burst reveal animation. Preference saved to localStorage
 8. **Mobile touch** — Ripple effects, press scale, long-press tooltips, 3D avatar tilt, finger trail stars
-9. **Install as PWA** — Service worker caches everything on first load; add to home screen for a native-like experience
+9. **Add to Home Screen** — Use your browser's "Add to Home Screen" to pin a standalone icon (no offline caching)
 
 ## ♿ Accessibility
 
@@ -216,7 +194,7 @@ The manifest includes wide (desktop) and narrow (mobile) screenshots — support
 | **Rocket CTA** | "Let's Work Together" button animates rocket icon on hover + progress bar on click |
 | **Theme Wave** | Dark/light toggle uses GSAP `clip-path` burst from button position — like a ripple spreading across the screen |
 | **Star Twinkle** | Footer star (`&#10022;`) twinkles infinitely — subtle cosmic touch |
-| **PWA Shortcuts** | Long-press the installed app icon for quick access to GitHub, WhatsApp, and Resume |
+| **App Shortcuts** | Long-press the home-screen icon for quick access to GitHub, WhatsApp, and Resume |
 
 ---
 

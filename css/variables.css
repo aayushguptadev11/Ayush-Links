@@ -20,6 +20,23 @@
   --brand-github    : #24292e;
   --brand-twitter   : #555555;
   --brand-threads   : #555555;
+
+  /* ------------------------------------------------------------
+     Brand fill palette — theme-independent.
+     These hexes appear in BOTH components.css (hover fills) and
+     touch.css (:active icon flashes). Defined once here so the two
+     files cannot drift apart.
+     ------------------------------------------------------------ */
+  --brand-fill-github  : #24292e;
+  --brand-fill-black   : #000000; /* Twitter/X + Threads */
+  --brand-fill-gray    : #555555; /* Twitter/X + Threads hover border */
+  --brand-linkedin     : #0077B5;
+  --brand-instagram    : #E4405F;
+  --brand-red          : #DC2626; /* Portfolio + Resume share this */
+  --brand-snapchat     : #E6B800; /* Snapchat icon colour */
+  --brand-snapchat-fill: #FFFC00; /* Snapchat hover/active fill */
+  --brand-whatsapp     : #25D366;
+  --brand-facebook     : #1877F2;
 }
 
 /* ============================================

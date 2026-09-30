@@ -1,80 +1,75 @@
 /* ============================================
    EMAIL CONTROLLER — Pre-filled Project Inquiry
-   With left-to-right progress animation on click
+   ============================================
+   Builds a mailto: link from App.config and plays a left-to-right progress
+   sweep before handing off to the mail client.
+
+   Exposed as: window.AyushLink.email
    ============================================ */
-const EmailController = {
-  init: function () {
-    const cta = document.querySelector('.hire-cta');
+(function (App) {
+  'use strict';
+
+  /**
+   * Milliseconds the progress sweep runs before the mail client opens.
+   * Kept in sync with the GSAP tween below.
+   */
+  var PROGRESS_DURATION = 1.2;
+
+  /**
+   * Build the mailto: URL from the shared config.
+   *
+   * @returns {string} Encoded mailto link with subject and body.
+   */
+  function buildMailtoLink() {
+    var to = App.config.email;
+    var subject = App.config.mailto.subject;
+    var body = App.config.mailto.body.join('\r\n');
+
+    return 'mailto:' + to +
+      '?subject=' + encodeURIComponent(subject) +
+      '&body=' + encodeURIComponent(body);
+  }
+
+  /**
+   * Attach the click handler that animates then opens the mail client.
+   *
+   * @returns {void}
+   */
+  function init() {
+    var cta = App.utils.$('.hire-cta');
     if (!cta) return;
 
     cta.addEventListener('click', function (e) {
       e.preventDefault();
-      // Prevent double-click during animation
+
+      // Guard against double-clicks during the animation.
       if (cta.classList.contains('is-loading')) return;
       cta.classList.add('is-loading');
 
-      // Build mailto link
-      const to = 'starverse1130@gmail.com';
-      const subject = 'Project Inquiry — Let\'s Work Together';
+      var mailtoLink = buildMailtoLink();
 
-      const body = [
-        'Dear Ayush,',
-        '',
-        'I hope this message finds you well. I came across your profile and was impressed by your work. I would like to discuss a potential collaboration opportunity.',
-        '',
-        '——— Project Details ———',
-        'Full Name: ',
-        'Organization / Institution: ',
-        'Project Type: (Web Application / UI/UX Design / Python Development / Other)',
-        'Estimated Budget: ',
-        'Expected Timeline: ',
-        '',
-        '——— Project Description ———',
-        'Please describe your project requirements in brief:',
-        '',
-        '——— Additional Notes ———',
-        '(Any references, links, or specific requirements you\'d like to share)',
-        '',
-        'Thank you for your time. I look forward to connecting with you.',
-        '',
-        'Warm Regards,',
-        '[Your Full Name]',
-        '[Your Contact Number]'
-      ].join('\r\n');
-
-      const mailtoLink = 'mailto:' + to +
-        '?subject=' + encodeURIComponent(subject) +
-        '&body=' + encodeURIComponent(body);
-
-      /* --------------------------------------------------
-         LEFT-TO-RIGHT PROGRESS ANIMATION
-         Shimmering progress bar sweeps across the button,
-         then opens the email client.
-         -------------------------------------------------- */
-
-      // Respect reduced motion — skip animation, open immediately
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      // Reduced motion: skip the sweep and open immediately.
+      if (App.utils.prefersReducedMotion()) {
         cta.classList.remove('is-loading');
         window.location.href = mailtoLink;
         return;
       }
 
-      // Create progress bar element
-      const progress = document.createElement('span');
+      var progress = document.createElement('span');
       progress.className = 'hire-cta-progress';
       cta.appendChild(progress);
 
-      // Disable pointer events during animation
+      // Block pointer events while the sweep runs.
       cta.style.pointerEvents = 'none';
 
-      // Animate progress bar — fallback if GSAP not available
-      const openMail = function () {
+      var openMail = function () {
         progress.remove();
         cta.classList.remove('is-loading');
         cta.style.pointerEvents = '';
         window.location.href = mailtoLink;
       };
 
+      // No GSAP → open immediately (behaviour matches the original fallback).
       if (typeof gsap === 'undefined') {
         openMail();
         return;
@@ -85,13 +80,13 @@ const EmailController = {
         transformOrigin: 'left center'
       }, {
         scaleX: 1,
-        duration: 1.2,
+        duration: PROGRESS_DURATION,
         ease: 'expo.out',
         onComplete: openMail
       });
 
-      // Also animate the rocket icon — quick orbit pulse
-      const icon = cta.querySelector('i');
+      // Rocket icon: quick orbit pulse.
+      var icon = cta.querySelector('i');
       if (icon) {
         gsap.to(icon, {
           rotation: -15,
@@ -107,4 +102,7 @@ const EmailController = {
       }
     });
   }
-};
+
+  App.email = { init: init };
+
+})(window.AyushLink = window.AyushLink || {});
